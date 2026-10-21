@@ -93,12 +93,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            echo "Release $GITHUB_REF_NAME already exists and cannot be modified after publishing." >&2
-            echo "Delete the empty release or use a new tag, then rerun this workflow." >&2
-            exit 1
+            gh release upload "$GITHUB_REF_NAME" release-assets/*.zip --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" release-assets/*.zip \
+              --verify-tag \
+              --generate-notes \
+              --title "NEMESIS $GITHUB_REF_NAME"
           fi
-
-          gh release create "$GITHUB_REF_NAME" release-assets/*.zip \
-            --verify-tag \
-            --generate-notes \
-            --title "NEMESIS $GITHUB_REF_NAME"
