@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
-"""Build a NEMESIS install zip from a package directory containing NEMESIS.data."""
+"""Build a reproducible NEMESIS install zip from a package directory."""
 from __future__ import annotations
 
 import argparse
+import stat
 import zipfile
 from pathlib import Path
+
+
+ZIP_EPOCH = (1980, 1, 1, 0, 0, 0)
 
 
 def main() -> None:
@@ -17,10 +21,17 @@ def main() -> None:
     if not meta.is_file():
         raise SystemExit(f"missing {meta}")
     out = args.output or (src.parent / f"{src.name}.zip")
-    with zipfile.ZipFile(out, "w", compression=zipfile.ZIP_DEFLATED) as z:
+    with zipfile.ZipFile(
+        out, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
+    ) as z:
         for p in sorted(src.rglob("*")):
             if p.is_file():
-                z.write(p, p.relative_to(src).as_posix())
+                name = p.relative_to(src).as_posix()
+                info = zipfile.ZipInfo(name, date_time=ZIP_EPOCH)
+                info.create_system = 3
+                info.external_attr = (stat.S_IMODE(p.stat().st_mode) & 0xFFFF) << 16
+                info.compress_type = zipfile.ZIP_DEFLATED
+                z.writestr(info, p.read_bytes())
     print(f"Wrote {out} ({out.stat().st_size} bytes)")
 
 

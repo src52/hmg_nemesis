@@ -60,6 +60,17 @@ jobs:
             python3 Sources/tools/make_nemesis_package.py "$package" -o "$output"
             unzip -tq "$output"
 
+            # Source checkout timestamps must not affect the generated ZIP.
+            reproducible="$RUNNER_TEMP/$(basename "$package")"
+            cp -a "$package" "$reproducible"
+            find "$reproducible" -type f -exec touch -d '2035-05-05 05:05:05 UTC' {} +
+            rebuilt="$RUNNER_TEMP/$id.rebuilt.zip"
+            python3 Sources/tools/make_nemesis_package.py "$reproducible" -o "$rebuilt"
+            cmp -s "$output" "$rebuilt" || {
+              echo "Non-reproducible ZIP: $package" >&2
+              exit 1
+            }
+
             while IFS= read -r script; do
               bash -n "$script"
             done < <(find "$package" -type f -name '*.sh' -print)
