@@ -1,0 +1,78 @@
+name: Build NEMESIS packages
+
+on:
+  pull_request:
+    paths:
+      - "Sources/packages/**"
+      - "Sources/tools/make_nemesis_package.py"
+      - ".github/workflows/build-packages.yml"
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+    paths:
+      - "Sources/packages/**"
+      - "Sources/tools/make_nemesis_package.py"
+      - ".github/workflows/build-packages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build package ZIPs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Build and validate packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          mkdir -p Sources/out
+          packages=(Sources/packages/*)
+          if (( ${#packages[@]} == 0 )); then
+            echo "No package source directories found" >&2
+            exit 1
+          fi
+
+          for package in "${packages[@]}"; do
+            [[ -d "$package" ]] || continue
+            [[ -f "$package/NEMESIS.data" ]] || {
+              echo "Missing NEMESIS.data: $package" >&2
+              exit 1
+            }
+
+            id=$(sed -n 's/^id=//p' "$package/NEMESIS.data" | head -n 1)
+            [[ "$id" =~ ^[A-Za-z0-9._-]+$ ]] || {
+              echo "Invalid or missing package id: $package" >&2
+              exit 1
+            }
+
+            output="Sources/out/$id.zip"
+            python3 Sources/tools/make_nemesis_package.py "$package" -o "$output"
+            unzip -tq "$output"
+
+            while IFS= read -r script; do
+              bash -n "$script"
+            done < <(find "$package" -type f -name '*.sh' -print)
+          done
+
+      - name: Upload package ZIPs
+        uses: actions/upload-artifact@v4
+        with:
+          name: nemesis-packages-${{ github.sha }}
+          path: Sources/out/*.zip
+          if-no-files-found: error
+          retention-days: 14
