@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="#99000000"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:id="@+id/popup_card"
+        android:orientation="vertical"
+        android:background="@color/hkmc_bg"
+        android:layout_gravity="center"
+        android:layout_width="640dp"
+        android:layout_height="wrap_content">
+        <include layout="@layout/title_bar" />
+        <TextView
+            android:id="@+id/message"
+            android:textSize="26sp"
+            android:textColor="#ff62797f"
+            android:gravity="center"
+            android:paddingLeft="32dp"
+            android:paddingRight="32dp"
+            android:paddingTop="28dp"
+            android:paddingBottom="28dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <LinearLayout
+            android:id="@+id/btn_bar"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:background="@drawable/co_bg_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="60dp">
+            <Button
+                android:id="@+id/button1"
+                android:text="@string/yes"
+                android:textSize="21sp"
+                android:textColor="@color/title_btn_text"
+                android:background="@drawable/co_bt_title"
+                android:layout_width="wrap_content"
+                android:layout_height="60dp"
+                android:minWidth="120dp"
+                android:paddingLeft="18dp"
+                android:paddingRight="18dp"
+                android:layout_marginRight="8dp" />
+            <Button
+                android:id="@+id/button2"
+                android:text="@string/no"
+                android:textSize="21sp"
+                android:textColor="@color/title_btn_text"
+                android:background="@drawable/co_bt_title"
+                android:layout_width="wrap_content"
+                android:layout_height="60dp"
+                android:minWidth="120dp"
+                android:paddingLeft="18dp"
+                android:paddingRight="18dp" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>
