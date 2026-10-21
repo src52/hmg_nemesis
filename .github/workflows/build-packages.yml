@@ -11,10 +11,6 @@ on:
       - main
     tags:
       - "v*"
-    paths:
-      - "Sources/packages/**"
-      - "Sources/tools/make_nemesis_package.py"
-      - ".github/workflows/build-packages.yml"
   workflow_dispatch:
 
 permissions:
